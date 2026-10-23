@@ -21,7 +21,7 @@ function copy1(::Type{T}, x) where {T}
 end
 
 to1(x::AbstractArray) = _to1(axes(x), x)
-_to1(::Tuple{Base.OneTo,Vararg{Base.OneTo}}, x) = x
+_to1(::Tuple{Base.OneTo, Vararg{Base.OneTo}}, x) = x
 _to1(::Tuple, x) = copy1(eltype(x), x)
 
 # implementations only need to provide plan_X(x, region)
@@ -30,8 +30,8 @@ for f in (:fht, :ifht, :fht!, :ifht!)
     pf = Symbol("plan_", f)
     @eval begin
         $f(x::AbstractArray) = $f(x, 1:ndims(x))
-        $f(x::AbstractArray, region) = (y=to1(x); $pf(y, region) * y)
-        $pf(x::AbstractArray; kws...) = (y=to1(x); $pf(y, 1:ndims(y); kws...))
+        $f(x::AbstractArray, region) = (y = to1(x); $pf(y, region) * y)
+        $pf(x::AbstractArray; kws...) = (y = to1(x); $pf(y, 1:ndims(y); kws...))
     end
 end
 
@@ -142,13 +142,13 @@ end
 ##############################################################################
 # implementations only need to provide the forward FHT transform.
 # ifht can be computed by scaling the forward transform.
-struct ScaledDHTPlan{T,P} <: DHTPlan{T}
+struct ScaledDHTPlan{T, P} <: DHTPlan{T}
     p::P
     scale::T
     function ScaledDHTPlan(p::DHTPlan, scale)
         T = eltype(p)
         P = typeof(p)
-        return new{T,P}(p, convert(T, scale))
+        return new{T, P}(p, convert(T, scale))
     end
 end
 ScaledDHTPlan(p::ScaledDHTPlan, α::Number) = ScaledDHTPlan(p.p, p.scale * α)
@@ -161,7 +161,7 @@ fftdims(p::ScaledDHTPlan) = fftdims(p.p)
 *(p::DHTPlan, α::Number) = ScaledDHTPlan(p, α)
 
 function normalization(::Type{T}, sz, region) where {T}
-    return one(T) / mapreduce(r -> Int(sz[r])::Int, *, region; init=1)::Int
+    return one(T) / mapreduce(r -> Int(sz[r])::Int, *, region; init = 1)::Int
 end
 normalization(X, region) = normalization(real(eltype(X)), size(X), region)
 

@@ -34,12 +34,12 @@ end
 
 # Restrict these rules to host arrays. Device compilation uses its own execution path.
 function EnzymeRules.forward(
-    config::FwdConfigWidth{1},
-    ::Const{typeof(*)},
-    RT::Type,
-    p::Const{<:DHTPlan},
-    x::Duplicated{<:Array},
-)
+        config::FwdConfigWidth{1},
+        ::Const{typeof(*)},
+        RT::Type,
+        p::Const{<:DHTPlan},
+        x::Duplicated{<:Array},
+    )
     check_active_buffer(config, x)
     primal = if needs_primal(config) || is_inplace(p.val)
         p.val * x.val
@@ -62,12 +62,12 @@ function EnzymeRules.forward(
 end
 
 function EnzymeRules.augmented_primal(
-    config::RevConfigWidth{1},
-    ::Const{typeof(*)},
-    RT::Type,
-    p::Const{<:DHTPlan},
-    x::Duplicated{<:Array},
-)
+        config::RevConfigWidth{1},
+        ::Const{typeof(*)},
+        RT::Type,
+        p::Const{<:DHTPlan},
+        x::Duplicated{<:Array},
+    )
     check_active_buffer(config, x)
     primal = if needs_primal(config) || is_inplace(p.val)
         p.val * x.val
@@ -83,13 +83,13 @@ function EnzymeRules.augmented_primal(
 end
 
 function EnzymeRules.reverse(
-    config::RevConfigWidth{1},
-    ::Const{typeof(*)},
-    RT::Type,
-    shadow,
-    p::Const{<:DHTPlan},
-    x::Duplicated{<:Array},
-)
+        config::RevConfigWidth{1},
+        ::Const{typeof(*)},
+        RT::Type,
+        shadow,
+        p::Const{<:DHTPlan},
+        x::Duplicated{<:Array},
+    )
     # Real Hartley plans and their real-scaled inverses are symmetric.
     # Preserve the cotangent while applying a potentially mutating plan.
     contribution = p.val * copy(shadow)
@@ -103,13 +103,13 @@ function EnzymeRules.reverse(
 end
 
 function EnzymeRules.forward(
-    config::FwdConfigWidth{1},
-    ::Const{typeof(mul!)},
-    RT::Type,
-    y::Duplicated{<:Array},
-    p::Const{<:DHTPlan},
-    x::Duplicated{<:Array},
-)
+        config::FwdConfigWidth{1},
+        ::Const{typeof(mul!)},
+        RT::Type,
+        y::Duplicated{<:Array},
+        p::Const{<:DHTPlan},
+        x::Duplicated{<:Array},
+    )
     check_active_buffer(config, x)
     check_active_buffer(config, y)
     tangent = p.val * copy(x.dval)
@@ -126,13 +126,13 @@ function EnzymeRules.forward(
 end
 
 function EnzymeRules.augmented_primal(
-    config::RevConfigWidth{1},
-    ::Const{typeof(mul!)},
-    RT::Type,
-    y::Duplicated{<:Array},
-    p::Const{<:DHTPlan},
-    x::Duplicated{<:Array},
-)
+        config::RevConfigWidth{1},
+        ::Const{typeof(mul!)},
+        RT::Type,
+        y::Duplicated{<:Array},
+        p::Const{<:DHTPlan},
+        x::Duplicated{<:Array},
+    )
     check_active_buffer(config, x)
     check_active_buffer(config, y)
     primal = mul!(y.val, p.val, x.val)
@@ -144,14 +144,14 @@ function EnzymeRules.augmented_primal(
 end
 
 function EnzymeRules.reverse(
-    config::RevConfigWidth{1},
-    ::Const{typeof(mul!)},
-    RT::Type,
-    tape,
-    y::Duplicated{<:Array},
-    p::Const{<:DHTPlan},
-    x::Duplicated{<:Array},
-)
+        config::RevConfigWidth{1},
+        ::Const{typeof(mul!)},
+        RT::Type,
+        tape,
+        y::Duplicated{<:Array},
+        p::Const{<:DHTPlan},
+        x::Duplicated{<:Array},
+    )
     contribution = p.val * copy(y.dval)
     if y.dval === x.dval
         x.dval .= contribution
