@@ -48,6 +48,10 @@ function plan_fht!(
     end
 end
 
+function check_inference(p, x)
+    @test (@inferred p * copy(x)) isa typeof(x)
+end
+
 function check_inv(xinv, xorg, xinvref)
     @test xorg ≈ xinv
     @test xinvref == xinv
@@ -86,6 +90,10 @@ end
         check_inv(p1 \ y1, x, x1)
         check_inv(p2 \ deepcopy(y1), x, x1)
 
+        for p in (p1, p2, ip1, ip2, ip3, ip4)
+            check_inference(p, x)
+        end
+
         # Check plan metadata.
         @test eltype(p1) == eltype(p2)
         @test ndims(p1) == ndims(p2)
@@ -100,3 +108,7 @@ end
         end
     end
 end
+
+include("numerics.jl")
+
+include("enzyme.jl")

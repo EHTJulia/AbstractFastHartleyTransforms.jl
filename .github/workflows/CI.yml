@@ -36,6 +36,7 @@ jobs:
       fail-fast: false
       matrix:
         version:
+          - '1.10.12'
           - '1'
         os:
           - ubuntu-latest

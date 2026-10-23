@@ -17,7 +17,7 @@ function LinearAlgebra.mul!(
     y::AbstractArray{T}, p::BFFTPlan{T,P}, x::AbstractArray{T}
 ) where {T,P}
     fx = p.bfftplan * x
-    return y .= real(fx) .+ imag(fx)
+    return y .= real.(fx) .+ imag.(fx)
 end
 
 function *(p::BFFTPlan{T,P}, x::AbstractArray{T}) where {T,P}
@@ -26,7 +26,7 @@ function *(p::BFFTPlan{T,P}, x::AbstractArray{T}) where {T,P}
 end
 
 function plan_inv(p::BFFTPlan)
-    return ScaledDHTPlan(p, normalization(Array{Bool}(undef, size(p)), p.bfftplan.region))
+    return ScaledDHTPlan(p, normalization(eltype(p), size(p), fftdims(p)))
 end
 
 struct BFFTPlanInplace{T,P} <: DHTPlan{T}
@@ -45,7 +45,7 @@ function LinearAlgebra.mul!(
     y::AbstractArray{T}, p::BFFTPlanInplace{T,P}, x::AbstractArray{T}
 ) where {T,P}
     fx = p.bfftplan * x
-    return y .= real(fx) .+ imag(fx)
+    return y .= real.(fx) .+ imag.(fx)
 end
 
 function *(p::BFFTPlanInplace{T,P}, x::AbstractArray{T}) where {T,P}
@@ -53,5 +53,7 @@ function *(p::BFFTPlanInplace{T,P}, x::AbstractArray{T}) where {T,P}
 end
 
 function plan_inv(p::BFFTPlanInplace)
-    return ScaledDHTPlan(p, normalization(Array{Bool}(undef, size(p)), p.bfftplan.region))
+    return ScaledDHTPlan(p, normalization(eltype(p), size(p), fftdims(p)))
 end
+
+is_inplace(::BFFTPlanInplace) = true

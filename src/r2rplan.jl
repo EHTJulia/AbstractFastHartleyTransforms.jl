@@ -12,12 +12,18 @@ end
 size(p::R2RPlan) = size(p.r2rplan)
 fftdims(p::R2RPlan) = fftdims(p.r2rplan)
 
+function LinearAlgebra.mul!(
+    y::AbstractArray{T}, p::R2RPlan{T}, x::AbstractArray{T}
+) where {T}
+    return LinearAlgebra.mul!(y, p.r2rplan, x)
+end
+
 function *(p::R2RPlan{T,P}, x::AbstractArray{T}) where {T,P}
     return p.r2rplan * x
 end
 
 function plan_inv(p::R2RPlan)
-    return ScaledDHTPlan(p, normalization(Array{Bool}(undef, size(p)), p.r2rplan.region))
+    return ScaledDHTPlan(p, normalization(eltype(p), size(p), fftdims(p)))
 end
 
 struct R2RPlanInplace{T,P} <: DHTPlan{T}
@@ -34,7 +40,8 @@ fftdims(p::R2RPlanInplace) = fftdims(p.r2r!plan)
 function LinearAlgebra.mul!(
     y::AbstractArray{T}, p::R2RPlanInplace{T,P}, x::AbstractArray{T}
 ) where {T,P}
-    return LinearAlgebra.mul!(y, p.r2r!plan, x)
+    y === x || copyto!(y, x)
+    return LinearAlgebra.mul!(y, p.r2r!plan, y)
 end
 
 function *(p::R2RPlanInplace{T,P}, x::AbstractArray{T}) where {T,P}
@@ -42,5 +49,7 @@ function *(p::R2RPlanInplace{T,P}, x::AbstractArray{T}) where {T,P}
 end
 
 function plan_inv(p::R2RPlanInplace)
-    return ScaledDHTPlan(p, normalization(Array{Bool}(undef, size(p)), p.r2r!plan.region))
+    return ScaledDHTPlan(p, normalization(eltype(p), size(p), fftdims(p)))
 end
+
+is_inplace(::R2RPlanInplace) = true

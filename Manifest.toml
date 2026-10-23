@@ -1,8 +1,8 @@
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.10.7"
+julia_version = "1.10.12"
 manifest_format = "2.0"
-project_hash = "d3f58022c76de71021a29047623afecaec425cd1"
+project_hash = "f49f4c80774ea83be9c04009f3f703ed3442618b"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -24,7 +24,7 @@ uuid = "56f22d72-fd6d-98f1-02f0-08ddc0907c33"
 [[deps.CompilerSupportLibraries_jll]]
 deps = ["Artifacts", "Libdl"]
 uuid = "e66e0078-7015-5450-92f7-15fbd957f2ae"
-version = "1.1.1+0"
+version = "1.1.2+1"
 
 [[deps.Libdl]]
 uuid = "8f399da3-3557-5675-b5ff-fb832c97cbdb"
@@ -36,7 +36,7 @@ uuid = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 [[deps.OpenBLAS_jll]]
 deps = ["Artifacts", "CompilerSupportLibraries_jll", "Libdl"]
 uuid = "4536629a-c528-5b80-bd46-f80d51c5b363"
-version = "0.3.23+4"
+version = "0.3.23+5"
 
 [[deps.libblastrampoline_jll]]
 deps = ["Artifacts", "Libdl"]

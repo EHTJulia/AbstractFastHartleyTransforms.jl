@@ -177,3 +177,7 @@ inv(p::ScaledDHTPlan) = ScaledDHTPlan(inv(p.p), inv(p.scale))
 function LinearAlgebra.mul!(y::AbstractArray, p::ScaledDHTPlan, x::AbstractArray)
     return LinearAlgebra.lmul!(p.scale, LinearAlgebra.mul!(y, p.p, x))
 end
+
+# A mutating plan overwrites its input even when its returned value is unused.
+is_inplace(::DHTPlan) = false
+is_inplace(p::ScaledDHTPlan) = is_inplace(p.p)
