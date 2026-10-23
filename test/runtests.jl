@@ -25,36 +25,36 @@ import AbstractFastHartleyTransforms:
     fftdims
 
 function plan_fht(
-    A, dims; flags=ESTIMATE, timelimit=Inf, use_r2r::Bool=ndims(A) == 1 ? true : false
-)
+        A, dims; flags = ESTIMATE, timelimit = Inf, use_r2r::Bool = ndims(A) == 1 ? true : false
+    )
     if use_r2r
-        r2rplan = plan_r2r(A, DHT, dims; flags=flags, timelimit=timelimit)
+        r2rplan = plan_r2r(A, DHT, dims; flags = flags, timelimit = timelimit)
         return R2RPlan(r2rplan)
     else
-        bfftplan = plan_bfft(A, dims; flags=flags, timelimit=timelimit)
+        bfftplan = plan_bfft(A, dims; flags = flags, timelimit = timelimit)
         return BFFTPlan(bfftplan)
     end
 end
 
 function plan_fht!(
-    A, dims; flags=ESTIMATE, timelimit=Inf, use_r2r::Bool=ndims(A) == 1 ? true : false
-)
+        A, dims; flags = ESTIMATE, timelimit = Inf, use_r2r::Bool = ndims(A) == 1 ? true : false
+    )
     if use_r2r
-        r2rplan = plan_r2r!(A, DHT, dims; flags=flags, timelimit=timelimit)
+        r2rplan = plan_r2r!(A, DHT, dims; flags = flags, timelimit = timelimit)
         return R2RPlanInplace(r2rplan)
     else
-        bfftplan = plan_bfft(A, dims; flags=flags, timelimit=timelimit)
+        bfftplan = plan_bfft(A, dims; flags = flags, timelimit = timelimit)
         return BFFTPlanInplace(bfftplan)
     end
 end
 
 function check_inference(p, x)
-    @test (@inferred p * copy(x)) isa typeof(x)
+    return @test (@inferred p * copy(x)) isa typeof(x)
 end
 
 function check_inv(xinv, xorg, xinvref)
     @test xorg ≈ xinv
-    @test xinvref == xinv
+    return @test xinvref == xinv
 end
 
 @testset "AbstractFastHartleyTransforms.jl" begin

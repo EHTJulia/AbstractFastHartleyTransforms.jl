@@ -14,15 +14,15 @@ Base.size(p::ReferenceHartleyPlan) = size(p.kernel)[1:1]
 AFHT.fftdims(::ReferenceHartleyPlan) = (1,)
 Base.:*(p::ReferenceHartleyPlan{T}, x::Vector{T}) where {T} = p.kernel * x
 function LinearAlgebra.mul!(
-    y::Vector{T}, p::ReferenceHartleyPlan{T}, x::Vector{T}
-) where {T}
+        y::Vector{T}, p::ReferenceHartleyPlan{T}, x::Vector{T}
+    ) where {T}
     return mul!(y, p.kernel, x)
 end
 function AFHT.plan_inv(p::ReferenceHartleyPlan{T}) where {T}
     return AFHT.ScaledDHTPlan(p, inv(T(size(p, 1))))
 end
 
-function reference_plan(x::Vector{T}) where {T<:Union{Float32,Float64}}
+function reference_plan(x::Vector{T}) where {T <: Union{Float32, Float64}}
     n = length(x)
     kernel = Matrix{T}(undef, n, n)
     for j in 1:n, k in 1:n
