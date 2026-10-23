@@ -2,6 +2,11 @@
 
 These requirements apply to implementation, tests, examples, benchmarks, and configuration files in this repository.
 
+## Collaboration
+
+- Follow [ColPrac](https://github.com/SciML/ColPrac) for contributions, reviews, merging, and releases, together with the repository-specific requirements below.
+- Submit changes through focused pull requests from topic branches; do not push code changes directly to the default branch. Merge only after CI passes and at least one reviewer other than the author approves. Authors must not approve their own pull requests.
+
 ## Julia performance
 
 - At the start of each task, check the latest Julia LTS release at https://julialang.org/downloads/ and report the version and the versioned official Performance Tips URL. The baseline verified on 2026-10-23 is Julia 1.10.12: https://docs.julialang.org/en/v1.10/manual/performance-tips/ (the official manual is versioned by minor release).

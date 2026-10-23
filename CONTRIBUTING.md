@@ -1,6 +1,6 @@
 # Contributing
 
-See [AGENTS.md](AGENTS.md) for coding standards and verification requirements.
+We follow [ColPrac](https://github.com/SciML/ColPrac). Repository-specific coding standards and verification requirements are in [AGENTS.md](AGENTS.md).
 
 ## Tests
 

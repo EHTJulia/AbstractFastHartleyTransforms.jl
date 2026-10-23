@@ -1,5 +1,7 @@
 # AbstractFastHartleyTransforms.jl
 
+[![ColPrac: Contributor's Guide on Collaborative Practices for Community Packages](https://img.shields.io/badge/ColPrac-Contributor%27s%20Guide-blueviolet)](https://github.com/SciML/ColPrac)
+
 A common Julia interface for real Hartley transforms. This package defines transform functions, plan types, inverse normalization, FFT-backed wrappers, and optional EnzymeCore rules. Concrete backends supply planning methods and execution.
 
 For everyday transforms, install [FastHartleyTransform.jl](https://EHTJulia.github.io/FastHartleyTransform.jl/dev/), which implements the interface using FFTW and optional CUDA/Reactant paths. Loading the abstract package alone does not provide a general CPU planner.
