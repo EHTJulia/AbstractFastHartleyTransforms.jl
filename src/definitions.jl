@@ -1,6 +1,6 @@
 # These definitions are heavily inspired by the AbstractFFTs.jl package.
 
-# DHT plan where the inputs are an array of eltype T
+# DHT plan whose input is an array with element type T.
 abstract type DHTPlan{T} end
 
 eltype(::Type{<:DHTPlan{T}}) where {T} = T
@@ -8,13 +8,13 @@ eltype(::Type{<:DHTPlan{T}}) where {T} = T
 """
     size(p::DHTPlan, [dim])
 
-Return the size of the input of a plan `p`, optionally at a specified dimenion `dim`.
+Return the size of the input of a plan `p`, optionally at a specified dimension `dim`.
 """
 size(p::DHTPlan, dim) = size(p)[dim]
 ndims(p::DHTPlan) = length(size(p))
 length(p::DHTPlan) = prod(size(p))::Int
 
-# copy to a 1-based array, using circular permutation
+# Copy to a 1-based array using a circular permutation.
 function copy1(::Type{T}, x) where {T}
     y = Array{T}(undef, map(length, axes(x)))
     return Base.circcopy!(y, x)
@@ -30,8 +30,8 @@ for f in (:fht, :ifht, :fht!, :ifht!)
     pf = Symbol("plan_", f)
     @eval begin
         $f(x::AbstractArray) = $f(x, 1:ndims(x))
-        $f(x::AbstractArray, region) = (y = to1(x); $pf(y, region) * y)
-        $pf(x::AbstractArray; kws...) = (y = to1(x); $pf(y, 1:ndims(y); kws...))
+        $f(x::AbstractArray, region) = (y=to1(x); $pf(y, region) * y)
+        $pf(x::AbstractArray; kws...) = (y=to1(x); $pf(y, 1:ndims(y); kws...))
     end
 end
 
@@ -39,7 +39,7 @@ end
     plan_fht(A [, dims]; flags=FFTW.ESTIMATE, timelimit=Inf)
 
 Pre-plan an optimized FHT along given dimensions (`dims`) of arrays matching the shape and type of `A`. 
-(The first two arguments have the same meaning as for [`fht`](@ref)).)
+(The first two arguments have the same meaning as for [`fht`](@ref).)
 Returns an object `P` which represents the linear operator computed by the FHT, and 
 which contains all of the information needed to compute `fht(A, dims)` quickly.
 """
@@ -75,16 +75,17 @@ Same as [`ifht`](@ref), but operates in-place on `A`.
 ifht!
 
 """
-    ifft(A [, dims])
+    ifht(A [, dims])
 
 Multidimensional inverse FHT.
 
-A one-dimensional inverse FHT computes the one-dimensional inverse DHT (IDHT) defined by as
+A one-dimensional inverse FHT computes the one-dimensional inverse DHT (IDHT) defined as
 ```math
 \\operatorname{IDHT}(A)[k] = \\frac{1}{\\operatorname{length}(A)} \\operatorname{DHT}(A)[k]
 ```
 
-A multidimensional inverse FHT simply performs this operation along each transformed dimension of `A`.
+A multidimensional inverse divides the corresponding forward transform by the
+product of the lengths of the transformed axes, excluding untransformed batch axes.
 """
 ifht
 
@@ -108,7 +109,7 @@ A one-dimensional FHT computes the one-dimensional discrete Hartley transform (D
 defined by
 
 ```math
-\\operatorname{DFT}(A)[k] = \\sum_{n=1}^{\\operatorname{length}(A)} \\operatorname{cas} \\left( +i\\frac{2\\pi(n-1)(k-1)}{\\operatorname{length}(A)} \\right) A[n],
+\\operatorname{DHT}(A)[k] = \\sum_{n=1}^{\\operatorname{length}(A)} \\operatorname{cas} \\left( \\frac{2\\pi(n-1)(k-1)}{\\operatorname{length}(A)} \\right) A[n],
 ```
 
 where ``\\operatorname{cas}`` is the cosine-and-sine function, or alternatively called Hartley kernel, defined by
@@ -117,7 +118,10 @@ where ``\\operatorname{cas}`` is the cosine-and-sine function, or alternatively 
 \\operatorname{cas}(x) = \\cos(x) + \\sin(x).
 ```
 
-A multidimensional FHT simply performs this operation along each transformed dimension of `A`.
+For transformed axes `dims`, the phase is the sum of the per-axis phases inside
+one Hartley kernel. This differs from the separable product of one-dimensional DHTs.
+The optional FFTW backend setting `use_r2r=true` retains that separable convention.
+The inverse is scaled by the product of the lengths of the transformed axes.
 """
 function fht end
 
@@ -171,9 +175,13 @@ end
 
 plan_inv(p::ScaledDHTPlan) = ScaledDHTPlan(plan_inv(p.p), inv(p.scale))
 
-# Don't cache inverse of scaled plan (only inverse of inner plan)
+# Do not cache the inverse of a scaled plan, only that of its inner plan.
 inv(p::ScaledDHTPlan) = ScaledDHTPlan(inv(p.p), inv(p.scale))
 
 function LinearAlgebra.mul!(y::AbstractArray, p::ScaledDHTPlan, x::AbstractArray)
     return LinearAlgebra.lmul!(p.scale, LinearAlgebra.mul!(y, p.p, x))
 end
+
+# A mutating plan overwrites its input even when its returned value is unused.
+is_inplace(::DHTPlan) = false
+is_inplace(p::ScaledDHTPlan) = is_inplace(p.p)
