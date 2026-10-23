@@ -8,7 +8,7 @@ eltype(::Type{<:DHTPlan{T}}) where {T} = T
 """
     size(p::DHTPlan, [dim])
 
-Return the size of the input of a plan `p`, optionally at a specified dimenion `dim`.
+Return the size of the input of a plan `p`, optionally at a specified dimension `dim`.
 """
 size(p::DHTPlan, dim) = size(p)[dim]
 ndims(p::DHTPlan) = length(size(p))
@@ -39,7 +39,7 @@ end
     plan_fht(A [, dims]; flags=FFTW.ESTIMATE, timelimit=Inf)
 
 Pre-plan an optimized FHT along given dimensions (`dims`) of arrays matching the shape and type of `A`. 
-(The first two arguments have the same meaning as for [`fht`](@ref)).)
+(The first two arguments have the same meaning as for [`fht`](@ref).)
 Returns an object `P` which represents the linear operator computed by the FHT, and 
 which contains all of the information needed to compute `fht(A, dims)` quickly.
 """
@@ -75,16 +75,17 @@ Same as [`ifht`](@ref), but operates in-place on `A`.
 ifht!
 
 """
-    ifft(A [, dims])
+    ifht(A [, dims])
 
 Multidimensional inverse FHT.
 
-A one-dimensional inverse FHT computes the one-dimensional inverse DHT (IDHT) defined by as
+A one-dimensional inverse FHT computes the one-dimensional inverse DHT (IDHT) defined as
 ```math
 \\operatorname{IDHT}(A)[k] = \\frac{1}{\\operatorname{length}(A)} \\operatorname{DHT}(A)[k]
 ```
 
-A multidimensional inverse FHT simply performs this operation along each transformed dimension of `A`.
+A multidimensional inverse divides the corresponding forward transform by the
+product of the lengths of the transformed axes, excluding untransformed batch axes.
 """
 ifht
 
@@ -108,7 +109,7 @@ A one-dimensional FHT computes the one-dimensional discrete Hartley transform (D
 defined by
 
 ```math
-\\operatorname{DFT}(A)[k] = \\sum_{n=1}^{\\operatorname{length}(A)} \\operatorname{cas} \\left( +i\\frac{2\\pi(n-1)(k-1)}{\\operatorname{length}(A)} \\right) A[n],
+\\operatorname{DHT}(A)[k] = \\sum_{n=1}^{\\operatorname{length}(A)} \\operatorname{cas} \\left( \\frac{2\\pi(n-1)(k-1)}{\\operatorname{length}(A)} \\right) A[n],
 ```
 
 where ``\\operatorname{cas}`` is the cosine-and-sine function, or alternatively called Hartley kernel, defined by
@@ -117,7 +118,10 @@ where ``\\operatorname{cas}`` is the cosine-and-sine function, or alternatively 
 \\operatorname{cas}(x) = \\cos(x) + \\sin(x).
 ```
 
-A multidimensional FHT simply performs this operation along each transformed dimension of `A`.
+For transformed axes `dims`, the phase is the sum of the per-axis phases inside
+one Hartley kernel. This differs from the separable product of one-dimensional DHTs.
+The optional FFTW backend setting `use_r2r=true` retains that separable convention.
+The inverse is scaled by the product of the lengths of the transformed axes.
 """
 function fht end
 

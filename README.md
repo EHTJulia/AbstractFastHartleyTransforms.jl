@@ -10,3 +10,11 @@ A general framework for fast Hartley transforms (FHTs) in Julia. This framework 
 
 ## Example implementations of FHTs using this framework
 - [`FastHartleyTransform.jl`](https://github.com/EHTJulia/FastHartleyTransform.jl) for CPU and NVIDIA CUDA GPUs.
+
+## Differentiation
+
+Load Enzyme to enable optional forward and reverse rules for fixed Hartley plans on CPU arrays. See the [differentiation guide](docs/src/differentiation.md) for supported operations and limitations.
+
+## Documentation
+
+See the [interface](docs/src/interface.md), [backend implementation guide](docs/src/backends.md), and [API reference](docs/src/api.md).
