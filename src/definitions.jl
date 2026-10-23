@@ -1,6 +1,6 @@
 # These definitions are heavily inspired by the AbstractFFTs.jl package.
 
-# DHT plan where the inputs are an array of eltype T
+# DHT plan whose input is an array with element type T.
 abstract type DHTPlan{T} end
 
 eltype(::Type{<:DHTPlan{T}}) where {T} = T
@@ -14,7 +14,7 @@ size(p::DHTPlan, dim) = size(p)[dim]
 ndims(p::DHTPlan) = length(size(p))
 length(p::DHTPlan) = prod(size(p))::Int
 
-# copy to a 1-based array, using circular permutation
+# Copy to a 1-based array using a circular permutation.
 function copy1(::Type{T}, x) where {T}
     y = Array{T}(undef, map(length, axes(x)))
     return Base.circcopy!(y, x)
@@ -30,8 +30,8 @@ for f in (:fht, :ifht, :fht!, :ifht!)
     pf = Symbol("plan_", f)
     @eval begin
         $f(x::AbstractArray) = $f(x, 1:ndims(x))
-        $f(x::AbstractArray, region) = (y = to1(x); $pf(y, region) * y)
-        $pf(x::AbstractArray; kws...) = (y = to1(x); $pf(y, 1:ndims(y); kws...))
+        $f(x::AbstractArray, region) = (y=to1(x); $pf(y, region) * y)
+        $pf(x::AbstractArray; kws...) = (y=to1(x); $pf(y, 1:ndims(y); kws...))
     end
 end
 
@@ -171,7 +171,7 @@ end
 
 plan_inv(p::ScaledDHTPlan) = ScaledDHTPlan(plan_inv(p.p), inv(p.scale))
 
-# Don't cache inverse of scaled plan (only inverse of inner plan)
+# Do not cache the inverse of a scaled plan, only that of its inner plan.
 inv(p::ScaledDHTPlan) = ScaledDHTPlan(inv(p.p), inv(p.scale))
 
 function LinearAlgebra.mul!(y::AbstractArray, p::ScaledDHTPlan, x::AbstractArray)

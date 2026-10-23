@@ -1,5 +1,5 @@
 ##############################################################################
-# This is a generic FHT Plan using BFFT (unnormalized backword FFT)
+# This is a generic FHT Plan using BFFT (unnormalized backward FFT)
 
 struct BFFTPlan{T,P} <: DHTPlan{T}
     bfftplan::P
