@@ -22,6 +22,6 @@ Batched AD lanes, higher-order AD, views, and CUDA derivatives are not validated
 
 ## Reactant
 
-Reactant support belongs to the concrete FastHartleyTransform extension. It lowers FFT operations to a compiled representation and differentiates that compiled workload. The existence of an EnzymeCore rule for native Julia execution does not imply that Reactant automatically calls it. Reactant CPU execution and gradients have separate tests; GPU/TPU execution has not been verified here.
+Reactant support belongs to the concrete FastHartleyTransform extension. It lowers FFT operations to a compiled representation and differentiates that compiled workload. Native EnzymeCore rules and Reactant differentiation are separate mechanisms. See the concrete package's [backend guide](https://ehtjulia.github.io/FastHartleyTransform.jl/dev/backends/) for device support.
 
 See the concrete package's [differentiation guide](https://EHTJulia.github.io/FastHartleyTransform.jl/dev/differentiation/) for Enzyme usage and Reactant compilation examples.
