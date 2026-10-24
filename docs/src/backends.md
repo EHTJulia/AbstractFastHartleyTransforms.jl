@@ -6,10 +6,12 @@ A backend supplies a plan subtype, shape/axes accessors, execution, and inverse 
 using AbstractFastHartleyTransforms, LinearAlgebra
 const AFHT = AbstractFastHartleyTransforms
 
+# Store the dense reference operator in the plan for reuse.
 struct ReferenceHartleyPlan{T} <: AFHT.DHTPlan{T}
     kernel::Matrix{T}
 end
 
+# Expose the input shape and transformed axes through the shared interface.
 Base.size(p::ReferenceHartleyPlan) = size(p.kernel)[1:1]
 AFHT.fftdims(::ReferenceHartleyPlan) = (1,)
 Base.:*(p::ReferenceHartleyPlan{T}, x::Vector{T}) where {T} = p.kernel * x
@@ -19,12 +21,14 @@ function LinearAlgebra.mul!(
     return mul!(y, p.kernel, x)
 end
 function AFHT.plan_inv(p::ReferenceHartleyPlan{T}) where {T}
+    # For this symmetric n-point transform, H * H = n * I.
     return AFHT.ScaledDHTPlan(p, inv(T(size(p, 1))))
 end
 
 function reference_plan(x::Vector{T}) where {T <: Union{Float32, Float64}}
     n = length(x)
     kernel = Matrix{T}(undef, n, n)
+    # Iterate down each column; subtract one for the mathematical indices.
     for j in 1:n, k in 1:n
         phase = T(2) * T(pi) * T((j - 1) * (k - 1)) / T(n)
         kernel[k, j] = cos(phase) + sin(phase)
@@ -35,7 +39,9 @@ end
 x = [1.0, 2.0, 3.0, 4.0]
 p = reference_plan(x)
 y = p * x
+# Verify that the normalized inverse recovers the original input.
 @assert inv(p) * y ≈ x
+# The output-buffer API should agree with plan multiplication.
 out = similar(x)
 mul!(out, p, x)
 @assert out ≈ y
