@@ -91,8 +91,8 @@ function EnzymeRules.reverse(
         x::Duplicated{<:Array},
     )
     # Real Hartley plans and their real-scaled inverses are symmetric.
-    # Preserve the cotangent while applying a potentially mutating plan.
-    contribution = p.val * copy(shadow)
+    # Copy only for mutating plans to preserve the cotangent.
+    contribution = p.val * (is_inplace(p.val) ? copy(shadow) : shadow)
     if is_inplace(p.val)
         x.dval .= contribution
     else
@@ -112,7 +112,7 @@ function EnzymeRules.forward(
     )
     check_active_buffer(config, x)
     check_active_buffer(config, y)
-    tangent = p.val * copy(x.dval)
+    tangent = p.val * (is_inplace(p.val) ? copy(x.dval) : x.dval)
     primal = mul!(y.val, p.val, x.val)
     y.dval .= tangent
     if needs_primal(config) && needs_shadow(config)
@@ -152,12 +152,13 @@ function EnzymeRules.reverse(
         p::Const{<:DHTPlan},
         x::Duplicated{<:Array},
     )
-    contribution = p.val * copy(y.dval)
+    contribution = p.val * (is_inplace(p.val) ? copy(y.dval) : y.dval)
     if y.dval === x.dval
         x.dval .= contribution
     else
-        fill!(y.dval, zero(eltype(y.dval)))
+        # Consume the contribution before clearing a potentially aliased result.
         x.dval .+= contribution
+        fill!(y.dval, zero(eltype(y.dval)))
     end
     return (nothing, nothing, nothing)
 end

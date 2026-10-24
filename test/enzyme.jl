@@ -163,3 +163,33 @@ end
         @test constant == original
     end
 end
+
+
+@testset "Enzyme aliased BFFT output buffers" begin
+    dims = (1, 2)
+    for T in (Float32, Float64), planner in (plan_fht, plan_ifht)
+        x = reshape(T.(sin.(1:12)), 3, 4)
+        target = reshape(T.(0.2cos.(1:12)), 3, 4)
+        p = planner(x, dims)
+        scale = planner === plan_ifht ? inv(T(length(x))) : one(T)
+        h = a -> direct_hartley(a, dims)
+        expected = scale .* h(2 .* (scale .* h(x) .- target))
+        check_enzyme_loss(a -> aliased_buffer_loss(p, a, target), x, expected)
+    end
+end
+
+
+struct AliasingIdentityPlan{T} <: AFHT.DHTPlan{T} end
+Base.:*(::AliasingIdentityPlan, x::Array) = x
+LinearAlgebra.mul!(y::Array, ::AliasingIdentityPlan, x::Array) = copyto!(y, x)
+
+@testset "Enzyme nonmutating plans with aliased results" begin
+    for T in (Float32, Float64)
+        x = T.(sin.(1:5))
+        target = T.(cos.(1:5))
+        p = AliasingIdentityPlan{T}()
+        expected = 2 .* (x .- target)
+        check_enzyme_loss(a -> buffer_loss(p, a, target), x, expected)
+        check_enzyme_loss(a -> aliased_buffer_loss(p, a, target), x, expected)
+    end
+end
