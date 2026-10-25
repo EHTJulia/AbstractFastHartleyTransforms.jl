@@ -61,6 +61,26 @@ function EnzymeRules.forward(
     return nothing
 end
 
+function EnzymeRules.forward(
+        config::FwdConfigWidth{1},
+        ::Const{typeof(*)},
+        RT::Type,
+        p::Const{<:DHTPlan},
+        x::Const{<:Array},
+    )
+    primal = p.val * x.val
+    tangent = zero(primal)
+
+    if needs_primal(config) && needs_shadow(config)
+        return Duplicated(primal, tangent)
+    elseif needs_primal(config)
+        return primal
+    elseif needs_shadow(config)
+        return tangent
+    end
+    return nothing
+end
+
 function EnzymeRules.augmented_primal(
         config::RevConfigWidth{1},
         ::Const{typeof(*)},
@@ -161,6 +181,34 @@ function EnzymeRules.reverse(
         fill!(y.dval, zero(eltype(y.dval)))
     end
     return (nothing, nothing, nothing)
+end
+
+# Constant input: no cotangent needs to propagate to x.
+function EnzymeRules.augmented_primal(
+        config::RevConfigWidth{1},
+        ::Const{typeof(*)},
+        RT::Type,
+        p::Const{<:DHTPlan},
+        x::Const{<:Array},
+    )
+    primal = p.val * x.val
+    shadow = needs_shadow(config) ? zero(primal) : nothing
+    return AugmentedReturn(
+        needs_primal(config) ? primal : nothing,
+        shadow,
+        nothing,
+    )
+end
+
+function EnzymeRules.reverse(
+        config::RevConfigWidth{1},
+        ::Const{typeof(*)},
+        RT::Type,
+        tape,
+        p::Const{<:DHTPlan},
+        x::Const{<:Array},
+    )
+    return (nothing, nothing)
 end
 
 end

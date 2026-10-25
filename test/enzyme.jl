@@ -193,3 +193,50 @@ LinearAlgebra.mul!(y::Array, ::AliasingIdentityPlan, x::Array) = copyto!(y, x)
         check_enzyme_loss(a -> aliased_buffer_loss(p, a, target), x, expected)
     end
 end
+
+function constant_input_loss(a, p, x)
+    y = p * x
+    return sum(abs2, a .* y)
+end
+
+@testset "Enzyme constant Hartley input" begin
+    for T in (Float32, Float64)
+        x = reshape(T.(sin.(1:12)), 3, 4)
+        a = reshape(T.(cos.(1:12)), 3, 4)
+        p = plan_fht(x, (1, 2))
+        tolerance = T == Float32 ? 2.0f-5 : 2.0e-11
+
+        expected = 2 .* a .* abs2.(p * x)
+
+        # Reverse mode
+        da = zero(a)
+        Enzyme.autodiff(
+            Reverse,
+            constant_input_loss,
+            Active,
+            Duplicated(a, da),
+            Const(p),
+            Const(x),
+        )
+        @test isapprox(da, expected; rtol = tolerance, atol = tolerance)
+
+        # Forward mode
+        direction = reshape(T.(sin.(13:24)), 3, 4)
+        result = Enzyme.autodiff(
+            Forward,
+            constant_input_loss,
+            Duplicated,
+            Duplicated(copy(a), copy(direction)),
+            Const(p),
+            Const(x),
+        )
+
+        expected_directional = sum(expected .* direction)
+        @test isapprox(
+            result[1],
+            expected_directional;
+            rtol = tolerance,
+            atol = tolerance,
+        )
+    end
+end
