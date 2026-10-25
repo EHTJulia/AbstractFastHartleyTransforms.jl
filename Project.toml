@@ -1,7 +1,7 @@
 name = "AbstractFastHartleyTransforms"
 uuid = "19a999c2-4b91-4a95-a5ef-9640c9e909f0"
 authors = ["Kazunori Akiyama"]
-version = "0.1.7"
+version = "0.1.8"
 
 [deps]
 AbstractFFTs = "621f4979-c628-5d54-868e-fcf4e3e8185c"
